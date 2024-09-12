@@ -5,4 +5,4 @@
 .vscode/ipch
 
 # native build output
-bin/*
+build/*
