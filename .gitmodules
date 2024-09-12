@@ -1,3 +1,0 @@
-[submodule "lib/inja"]
-	path = lib/inja
-	url = https://github.com/pantor/inja.git
