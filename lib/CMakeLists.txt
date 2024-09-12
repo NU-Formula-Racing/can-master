@@ -1,8 +1,9 @@
-# Define the header-only library
+# Inja w/ JSON dependency Library
 add_library(inja-json INTERFACE)
-
-# Specify the language explicitly as C++
 set_target_properties(inja-json PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(inja-json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/inja)
 
-# Add include directories so other targets can find the headers
-target_include_directories(inja-json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# httplib Library
+add_library(httplib INTERFACE)
+set_target_properties(httplib PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(httplib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/httplib)
