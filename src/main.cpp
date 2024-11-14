@@ -1,125 +1,96 @@
-/*********
-  Rui Santos & Sara Santos - Random Nerd Tutorials
-  Complete instructions at https://RandomNerdTutorials.com/esp32-websocket-server-sensor/
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*********/
-#include <Arduino.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include "LittleFS.h"
-#include <Arduino_JSON.h>
+// #include <SPI.h>
+// #include <mcp2515.h>
+// #include <arduino.h>
 
-// Replace with your network credentials
-const char *ssid = "NFR25_Monitor";
-const char *password = "GoCats!";
+// struct can_frame canMsg;
+// MCP2515 mcp2515(10);
 
-// Create AsyncWebServer object on port 80
-AsyncWebServer server(80);
-// Create a WebSocket object
-AsyncWebSocket ws("/ws");
-// Json Variable to Hold Sensor Readings
-JSONVar readings;
+// void setup()
+// {
+//   Serial.begin(115200);
 
-// Timer variables
-unsigned long lastTime = 0;
-unsigned long timerDelay = 1000;
+//   mcp2515.reset();
+//   mcp2515.setBitrate(CAN_1000KBPS);
+//   mcp2515.setNormalMode();
 
-// Get Sensor Readings and return JSON object
-String getSensorReadings()
-{
-    readings["temperature"] = String(millis());
-    readings["humidity"] = String(millis() * 0.5f);
-    readings["pressure"] = String(millis() * 0.25f);
-    String jsonString = JSON.stringify(readings);
-    return jsonString;
-}
+//   Serial.println("------- CAN Read ----------");
+//   Serial.println("ID  DLC   DATA");
+// }
 
-// Initialize LittleFS
-void initLittleFS()
-{
-    if (!LittleFS.begin(true))
-    {
-        Serial.println("An error has occurred while mounting LittleFS");
-    }
-    Serial.println("LittleFS mounted successfully");
-}
+// void loop()
+// {
+//   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK)
+//   {
+//     Serial.print(canMsg.can_id, HEX); // print ID
+//     Serial.print(" ");
+//     Serial.print(canMsg.can_dlc, HEX); // print DLC
+//     Serial.print(" ");
 
-// Initialize WiFi
-void initWiFi()
-{
-    WiFi.softAP(ssid);
-    Serial.println("IP Address: ");
-    Serial.println(WiFi.softAPIP());
-}
+//     for (int i = 0; i < canMsg.can_dlc; i++)
+//     { // print the data
+//       Serial.print(canMsg.data[i], HEX);
+//       Serial.print(" ");
+//     }
 
-void notifyClients(String sensorReadings)
-{
-    ws.textAll(sensorReadings);
-}
+//     Serial.println();
+//   }
+// }
+#include <arduino.h>
+#include <SPI.h>
+#include <mcp2515.h>
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
-{
-    AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
-    {
-        String sensorReadings = getSensorReadings();
-        Serial.print(sensorReadings);
-        notifyClients(sensorReadings);
-    }
-}
+struct can_frame canMsg;
+struct MCP2515 mcp2515(5); // CS pin is GPIO 5
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
-{
-    switch (type)
-    {
-    case WS_EVT_CONNECT:
-        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-        break;
-    case WS_EVT_DISCONNECT:
-        Serial.printf("WebSocket client #%u disconnected\n", client->id());
-        break;
-    case WS_EVT_DATA:
-        handleWebSocketMessage(arg, data, len);
-        break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-        break;
-    }
-}
-
-void initWebSocket()
-{
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
-}
+#define CAN_ACK_ID 0x123 // CAN ID for acknowledgment
 
 void setup()
 {
-    Serial.begin(9600);
-    initWiFi();
-    initLittleFS();
-    initWebSocket();
+    Serial.begin(115200);
 
-    // Web Server Root URL
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(LittleFS, "/index.html", "text/html"); });
+    SPI.begin();
 
-    server.serveStatic("/", LittleFS, "/");
+    mcp2515.reset();
+    mcp2515.setBitrate(CAN_1000KBPS, MCP_8MHZ);
+    mcp2515.setNormalMode();
 
-    // Start server
-    server.begin();
+    Serial.println("Board Started");
 }
 
 void loop()
 {
-    if ((millis() - lastTime) > timerDelay)
+    if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK)
     {
-        String sensorReadings = getSensorReadings();
-        Serial.print(sensorReadings);
-        notifyClients(sensorReadings);
-        lastTime = millis();
+        // if (canMsg.can_id == CAN_ACK_ID) // Check if the message is from the sender
+        // {
+        //   // int tempInt = (canMsg.data[0] << 8) | canMsg.data[1]; // Combine MSB and LSB
+        //   // float temperatureC = tempInt / 100.0;                 // Convert back to float
+
+        //   Serial.print("Temperature received: ");
+        //   Serial.print(canMsg.data[0]);
+        //   Serial.print(" ");
+        //   Serial.println(canMsg.data[1]);
+
+        // }
+
+        uint16_t raw_value = canMsg.data[1] << 8 | canMsg.data[0]; // Little-endian format
+
+        // Apply the scaling factor to convert it back to the original float value
+        float decoded_value = raw_value * 0.01;
+
+        Serial.print("Data received: ");
+        Serial.print(canMsg.can_id, HEX);
+        Serial.print(" ");
+        Serial.print(canMsg.can_dlc);
+        Serial.print(" ");
+        Serial.println(decoded_value);
+        //   Serial.print(canMsg.data[0]);
+        //   Serial.print(" ");
+        //   Serial.print(canMsg.data[1]);
+        //   Serial.print(" ");
+        //   Serial.print(canMsg.data[2]);
+        //   Serial.print(" ");
+        //   Serial.println(canMsg.data[3]);
+        // }
     }
-    ws.cleanupClients();
 }
