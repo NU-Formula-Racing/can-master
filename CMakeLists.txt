@@ -1,21 +1,21 @@
 # Specify the minimum version of CMake
 cmake_minimum_required(VERSION 3.10)
 
-# Project name
-project(can-master)
-
 # Set the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Project name
+project(can_master)
 
 # Include directory for header files
 include_directories(include)
 
-# Add subdirectory for library
-add_subdirectory(lib)
+# Add the source files
+file(GLOB SOURCES "native/*.cpp")
 
-# Add the native main.cpp
-add_executable(can-master native/main.cpp)
+# Create an executable
+add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Link the library (if applicable)
-target_link_libraries(can-master inja-json)
+# Link the Winsock library
+target_link_libraries(can_master ws2_32)

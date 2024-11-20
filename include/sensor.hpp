@@ -6,35 +6,31 @@
 #ifndef NATIVE
 #include <CAN.h>
 #define CAN_SUPPORTED
-#endif // !NATIVE
+#endif  // !NATIVE
 
 template <typename T>
-class Sensor
-{
-public:
+class Sensor {
+   public:
 #ifdef CAN_SUPPORTED
     template <typename CAN_MSG_T>
-    static Sensor<CAN_MSG_T> fromCAN(CANSignal &signal)
-    {
-        std::function<CAN_MSG_T()> read = [signal]()
-        {
+    static Sensor<CAN_MSG_T> fromCAN(CANSignal &signal) {
+        std::function<CAN_MSG_T()> read = [signal]() {
             return (CAN_MSG_T)signal;
         };
 
         return Sensor<CAN_MSG_T>(read);
     }
-#endif // CAN_SUPPORTED
+#endif  // CAN_SUPPORTED
 
     template <typename U>
-    static Sensor<U> fromFunction(std::function<U()> read)
-    {
+    static Sensor<U> fromFunction(std::function<U()> read) {
         return Sensor<U>(read);
     }
 
     Sensor(std::function<T()> read) : _read(read) {}
     T read() { return _read(); }
 
-private:
+   private:
     std::function<T()> _read;
 };
 
@@ -50,4 +46,4 @@ private:
 #define SENSOR_CAN_OR_OSCILLATE(type, can_signal, min, max, period) \
     (can_signal ? Sensor<type>::fromCAN<type>(can_signal) : Sensor<type>::fromFunction<type>([min, max, period]() { return min + (max - min) * (1 + sin(millis() * 2 * PI / period)) / 2; }))
 
-#endif // __SENSOR_H__
+#endif  // __SENSOR_H__

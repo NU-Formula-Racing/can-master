@@ -2,4 +2,4 @@
 
 echo "Attempting to run the project"
 
-./build/can-master.exe
+./build/can_master.exe
