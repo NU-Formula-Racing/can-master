@@ -1,46 +1,27 @@
-var gateway = `ws://${window.location.hostname}/ws`;
-var websocket;
-// Init web socket when the page loads
-window.addEventListener('load', onload);
+var gateway = 'ws://localhost:9002';
+const socket = new WebSocket(gateway); 
 
-function onload(event) {
-    initWebSocket();
-}
+socket.onopen = () => {
+    console.log("WebSocket connection opened");
 
-function getReadings(){
-    websocket.send("getReadings");
-}
+    // Send data to the server
+    const data = { 
+        method: "GET" 
+    };
 
-function initWebSocket() {
-    console.log('Trying to open a WebSocket connection…');
-    websocket = new WebSocket(gateway);
-    websocket.onopen = onOpen;
-    websocket.onclose = onClose;
-    websocket.onmessage = onMessage;
-}
+    socket.send(JSON.stringify(data)); 
+};
 
-// When websocket is established, call the getReadings() function
-function onOpen(event) {
-    console.log('Connection opened');
-    getReadings();
-}
+socket.onmessage = (event) => {
+    let parsedData = JSON.parse(event.data);
 
-function onClose(event) {
-    console.log('Connection closed');
-    setTimeout(initWebSocket, 2000);
-}
+    console.log("Data received from server:", parsedData);
 
-// Function that receives the message from the ESP32 with the readings
-function onMessage(event) {
-    console.log(event.data);
-    var myObj = JSON.parse(event.data);
-    var keys = Object.keys(myObj);
+    document.getElementById("temperature").innerHTML = parsedData["temperature"];
+    document.getElementById("humidity").innerHTML = parsedData["humidity"];
+    document.getElementById("pressure").innerHTML = parsedData["pressure"];
+};
 
-    console.log(myObj);
-    console.log(keys);
-
-    for (var i = 0; i < keys.length; i++){
-        var key = keys[i];
-        document.getElementById(key).innerHTML = myObj[key];
-    }
-}
+socket.onerror = (error) => {
+    console.error("WebSocket error:", error);
+};

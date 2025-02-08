@@ -8,6 +8,8 @@
 
 class DummyServer : public IWebServer {
    public:
+
+   
 };
 
 #endif  // __DUMMY_SERVER_H__

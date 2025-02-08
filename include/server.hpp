@@ -5,9 +5,9 @@
 #include <platform/native_server.hpp>
 #define Server NativeServer
 
-#elif defined(ARDUINO_ARCH_ESP32)
-#include <platform/esp_server.hpp>
-#define Server ESPServer
+// #elif defined(ARDUINO_ARCH_ESP32)
+// #include <platform/esp_server.hpp>
+// #define Server ESPServer
 
 #else
 #include <platform/dummy_server.hpp>
