@@ -37,6 +37,8 @@ class IWebServer {
     // virtual void del(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
 
     virtual void onNotFound(std::function<ServerResponse(ServerRequest)> handler) = 0;
+
+    virtual void sendTest() = 0;
 };
 
 
