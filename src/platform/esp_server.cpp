@@ -101,3 +101,15 @@ void ESPServer::sendTest() {
     }
     ws.cleanupClients();
 }
+
+void ESPServer::onNotFound(std::function<ServerResponse(ServerRequest)> handler) {
+    // no op
+}
+
+void ESPServer::onOpen(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) {
+    // no op
+}
+
+void ESPServer::onClose(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) {
+    // no op
+}
