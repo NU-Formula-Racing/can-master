@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 struct ServerRequest {
-    std::string method;
+    int method;
     std::string path;
     std::string body;
     std::unordered_map<std::string, std::string> headers;
@@ -28,17 +28,20 @@ class IWebServer {
 
     virtual void begin(const int port) = 0;
 
-    virtual void onOpen(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
-    virtual void onClose(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+    virtual void get(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+    
+    virtual void sendTest() = 0;
 
-    // virtual void get(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+    virtual ServerResponse sendRequest(ServerRequest srq) = 0;
+
+    // virtual void onOpen(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+    // virtual void onClose(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+
     // virtual void post(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
     // virtual void put(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
     // virtual void del(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
 
-    virtual void onNotFound(std::function<ServerResponse(ServerRequest)> handler) = 0;
-
-    virtual void sendTest() = 0;
+    // virtual void onNotFound(std::function<ServerResponse(ServerRequest)> handler) = 0;
 };
 
 

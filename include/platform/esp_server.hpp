@@ -35,37 +35,23 @@ class ESPServer : public IWebServer {
    public:
       ESPServer();
 
-      // Get Sensor Readings and return JSON object
-      String getSensorReadings();
-
-      // Initialize LittleFS
-      void initLittleFS();
-
-      // Initialize WiFi
-      void initWiFi();
-
-      void notifyClients(String sensorReadings);
-
-      void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
-
       void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-
-      void initWebSocket();
 
       void begin(const int port) override;
 
-      void sendTest();
+      void sendTest() override;
 
-      void onOpen(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) override;
-      void onClose(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) override;
-
+      ServerResponse sendRequest(ServerRequest srq) override;
    
-      // virtual void get(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
+      void get(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) override;
       // virtual void post(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
       // virtual void put(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
       // virtual void del(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) = 0;
 
-      void onNotFound(std::function<ServerResponse(ServerRequest)> handler) override;
+      // void onOpen(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) override;
+      // void onClose(const std::string &path, std::function<ServerResponse(ServerRequest)> handler) override;
+
+      // void onNotFound(std::function<ServerResponse(ServerRequest)> handler) override;
 };
 
 
